@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
 
-public struct CharacterComponent : IComponentData
+public struct MovableComponent : IComponentData
 {
-    public int HP;
-    public int MaxHP;
 }
