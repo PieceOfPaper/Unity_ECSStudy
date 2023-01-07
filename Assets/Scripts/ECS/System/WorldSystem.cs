@@ -19,16 +19,22 @@ public partial struct WorldSystem : ISystem
     {
         foreach (RefRW<WorldComponent> worldComponent in SystemAPI.Query<RefRW<WorldComponent>>())
         {
-            // if (worldComponent.ValueRO.isSpawnedEnemy == false)
-            // {
-            //     Entity newEntity = state.EntityManager.Instantiate(worldComponent.ValueRO.enemyPrefab);
-            //     state.EntityManager.SetComponentData(newEntity, LocalTransform.FromPosition(float3.zero));
-            //     worldComponent.ValueRW.isSpawnedEnemy = true;
-            // }
+            if (worldComponent.ValueRO.isSpawnedEnemy == false)
+            {
+                if (worldComponent.ValueRO.enemyPrefab != Entity.Null)
+                {
+                    Entity newEntity = state.EntityManager.Instantiate(worldComponent.ValueRO.enemyPrefab);
+                    state.EntityManager.SetComponentData(newEntity, new LocalTransform() { Position = new Vector3(1f, 0f, 0f), Scale = 1f, Rotation = Quaternion.Euler(0f, 180f, 0f) });
+                }
+                worldComponent.ValueRW.isSpawnedEnemy = true;
+            }
             if (worldComponent.ValueRO.isSpawnedPlayer == false)
             {
-                Entity newEntity = state.EntityManager.Instantiate(worldComponent.ValueRO.playerPrefab);
-                state.EntityManager.SetComponentData(newEntity, new LocalTransform(){ Position = Vector3.zero, Scale = 1f, Rotation = Quaternion.Euler(0f, 180f, 0f) });
+                if (worldComponent.ValueRO.playerPrefab != Entity.Null)
+                {
+                    Entity newEntity = state.EntityManager.Instantiate(worldComponent.ValueRO.playerPrefab);
+                    state.EntityManager.SetComponentData(newEntity, new LocalTransform() { Position = new Vector3(-1f, 0f, 0f), Scale = 1f, Rotation = Quaternion.Euler(0f, 180f, 0f) });
+                }
                 worldComponent.ValueRW.isSpawnedPlayer = true;
             }
         }
