@@ -7,8 +7,11 @@ using Unity.Mathematics;
 
 public partial struct WorldSystem : ISystem
 {   
+    static CinemachineVirtualCameraTarget vcamTarget;
+
     public void OnCreate(ref SystemState state)
     {
+        vcamTarget = GameObject.FindObjectOfType<CinemachineVirtualCameraTarget>();
     }
 
     public void OnDestroy(ref SystemState state)
@@ -34,6 +37,7 @@ public partial struct WorldSystem : ISystem
                 {
                     Entity newEntity = state.EntityManager.Instantiate(worldComponent.ValueRO.playerPrefab);
                     state.EntityManager.SetComponentData(newEntity, new LocalTransform() { Position = new Vector3(-1f, 0f, 0f), Scale = 1f, Rotation = Quaternion.Euler(0f, 180f, 0f) });
+                    if (vcamTarget != null) vcamTarget.SetPosition(new Vector3(-1f, 0f, 0f));
                 }
                 worldComponent.ValueRW.isSpawnedPlayer = true;
             }
