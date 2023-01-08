@@ -4,11 +4,17 @@ using UnityEngine;
 using Unity.Entities;
 using Unity.Transforms;
 using Unity.Mathematics;
+using UnityEngine.InputSystem;
 
-public partial struct MovableSystem : ISystem
+public partial struct MovableSystem : ISystem, MainInputAction.IPlayerActions
 {
+    static Vector2 moveDir;
+
     public void OnCreate(ref SystemState state)
     {
+        var mainInputAction = new MainInputAction();
+        mainInputAction.Enable();
+        mainInputAction.Player.SetCallbacks(this);
     }
 
     public void OnDestroy(ref SystemState state)
@@ -19,11 +25,7 @@ public partial struct MovableSystem : ISystem
     {
         foreach (var (transform, movable) in SystemAPI.Query<RefRW<LocalTransform>, RefRO<MovableComponent>>())
         {
-            Vector3 dir = Vector3.zero;
-            if (Input.GetKey(KeyCode.UpArrow)) dir += Vector3.forward;
-            if (Input.GetKey(KeyCode.DownArrow)) dir += Vector3.back;
-            if (Input.GetKey(KeyCode.LeftArrow)) dir += Vector3.left;
-            if (Input.GetKey(KeyCode.RightArrow)) dir += Vector3.right;
+            Vector3 dir = new Vector3(moveDir.x, 0f, moveDir.y);
             if (dir == Vector3.zero) continue;
 
             dir = dir.normalized;
@@ -32,5 +34,19 @@ public partial struct MovableSystem : ISystem
             transformValue = transformValue.Translate(dir * movable.ValueRO.moveSpeed * SystemAPI.Time.DeltaTime);
             transform.ValueRW = transformValue;
         }
+    }
+
+
+    public void OnFire(InputAction.CallbackContext context)
+    {
+    }
+
+    public void OnLook(InputAction.CallbackContext context)
+    {
+    }
+
+    public void OnMove(InputAction.CallbackContext context)
+    {
+        moveDir = context.ReadValue<Vector2>();
     }
 }
