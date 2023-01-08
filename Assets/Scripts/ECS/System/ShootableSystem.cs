@@ -12,6 +12,9 @@ public partial struct ShootableSystem : ISystem, MainInputAction.IPlayerActions
 
     public void OnCreate(ref SystemState state)
     {
+        var mainInputAction = new MainInputAction();
+        mainInputAction.Enable();
+        mainInputAction.Player.SetCallbacks(this);
     }
 
     public void OnDestroy(ref SystemState state)
@@ -20,7 +23,7 @@ public partial struct ShootableSystem : ISystem, MainInputAction.IPlayerActions
 
     public void OnUpdate(ref SystemState state)
     {
-        foreach (var (transform, shootable) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<ShootableComponent>>())
+        foreach (var (transform, shootable) in SystemAPI.Query<RefRO<LocalTransform>, RefRW<ShootableComponent>>())
         {
             //Reloading
             if (shootable.ValueRO.BulletCount < shootable.ValueRO.BulletCountMax)
@@ -51,7 +54,13 @@ public partial struct ShootableSystem : ISystem, MainInputAction.IPlayerActions
                     shootable.ValueRW.BulletCount--;
                     shootable.ValueRW.BulletLastShotTime = (float)SystemAPI.Time.ElapsedTime;
 
-                    Debug.Log("On Fire");
+                    if (shootable.ValueRO.BulletPrefab != Entity.Null)
+                    {
+                        var bulletEntity = state.EntityManager.Instantiate(shootable.ValueRO.BulletPrefab);
+                        var bulletTransform = new LocalTransform() { Position = transform.ValueRO.Position , Scale = 1f, Rotation = transform.ValueRO.Rotation };
+                        bulletTransform.Position += math.mul(transform.ValueRO.Rotation, shootable.ValueRO.ShootOffset);
+                        state.EntityManager.SetComponentData(bulletEntity, bulletTransform);
+                    }
                 }
                 m_OnKeyFire = false;
             }

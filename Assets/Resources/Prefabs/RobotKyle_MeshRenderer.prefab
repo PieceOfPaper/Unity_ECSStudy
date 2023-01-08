@@ -124,6 +124,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1387b39285f7f4c969b1fcba51609b12, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  BulletPrefab: {fileID: 5638785257951352676, guid: c98c7344e35ad4ec8928cabed5547ec8, type: 3}
+  ShootOffset: {x: 0, y: 1.3, z: 0.28}
   BulletCount: 6
   BulletReloadTime: 1
   BulletShotCooltime: 0.2
