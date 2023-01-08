@@ -16,9 +16,9 @@ public class ShootableBaker : Baker<ShootableAuthoring>
     {
         AddComponent(new ShootableComponent()
         {
-            BulletCount = authoring.BulletCount,
+            BulletCount = 0,
             BulletCountMax = authoring.BulletCount,
-            BulletReloadTime = authoring.BulletReloadTime,
+            BulletReloadTime = 0f,
             BulletReloadTimeMax = authoring.BulletReloadTime,
             BulletShotCooltime = authoring.BulletShotCooltime,
             BulletLastShotTime = 0f,
