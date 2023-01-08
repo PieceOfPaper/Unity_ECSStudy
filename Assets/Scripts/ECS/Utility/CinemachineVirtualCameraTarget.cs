@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Entities;
+using Unity.Mathematics;
+using Unity.Transforms;
 
 [RequireComponent(typeof(Cinemachine.CinemachineVirtualCameraBase))]
 public class CinemachineVirtualCameraTarget : MonoBehaviour
@@ -16,28 +19,30 @@ public class CinemachineVirtualCameraTarget : MonoBehaviour
     }
 
     Transform m_DummyTransform;
-    Vector3 m_CurrentPosition;
 
-    private void Start()
+    private void Start() 
     {
-        if (m_DummyTransform == null)
-        {
-            var newObj = new GameObject("DummyTransform");
-            m_DummyTransform = newObj.transform;
-            m_DummyTransform.position = m_CurrentPosition;
-        }
-
-        VCam.LookAt = m_DummyTransform;
-        VCam.Follow = m_DummyTransform;
+        VCam.LookAt = null;
+        VCam.Follow = null;
     }
 
     private void LateUpdate()
     {
-        if (m_DummyTransform != null) m_DummyTransform.position = m_CurrentPosition;
-    }
+        var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        EntityQuery query = entityManager.CreateEntityQuery(typeof(MovableComponent));
+        if (query.IsEmpty == false)
+        {
+            var entity = query.GetSingletonEntity();
+            var localTransform = entityManager.GetComponentData<LocalTransform>(entity);
 
-    public void SetPosition(Vector3 pos)
-    {
-        m_CurrentPosition = pos;
+            if (m_DummyTransform == null)
+            {
+                var newObj = new GameObject("DummyTransform");
+                m_DummyTransform = newObj.transform;
+                VCam.LookAt = m_DummyTransform;
+                VCam.Follow = m_DummyTransform;
+            }
+            m_DummyTransform.position = localTransform.Position;
+        }
     }
 }
