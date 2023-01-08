@@ -5,6 +5,7 @@ using Unity.Entities;
 
 public class MovableAuthoring : MonoBehaviour
 {
+    [Tooltip("이동 속도")] public float moveSpeed = 1.0f;
 }
 
 public class MovableBaker : Baker<MovableAuthoring>
@@ -13,6 +14,7 @@ public class MovableBaker : Baker<MovableAuthoring>
     {
         AddComponent(new MovableComponent()
         {
+            moveSpeed = authoring.moveSpeed,
         });
     }
 }

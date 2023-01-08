@@ -5,4 +5,5 @@ using Unity.Entities;
 
 public struct MovableComponent : IComponentData
 {
+    public float moveSpeed;
 }
