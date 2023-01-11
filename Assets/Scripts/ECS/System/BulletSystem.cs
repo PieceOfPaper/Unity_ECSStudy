@@ -17,11 +17,19 @@ public partial struct BulletSystem : ISystem
 
     public void OnUpdate(ref SystemState state)
     {
-        foreach (var (transform, bullet) in SystemAPI.Query<RefRW<LocalTransform>, RefRO<BulletComponent>>())
+        new ProcessBulletMoveJob()
         {
-            var transformValue = transform.ValueRW;
-            transformValue = transformValue.Translate(math.mul(transformValue.Rotation, Vector3.forward) * bullet.ValueRO.Speed * SystemAPI.Time.DeltaTime);
-            transform.ValueRW = transformValue;
-        }
+            deltaTime = SystemAPI.Time.DeltaTime,
+        }.ScheduleParallel();
+    }
+}
+
+public partial struct ProcessBulletMoveJob : IJobEntity
+{
+    public float deltaTime;
+
+    private void Execute(ref LocalTransform transform, ref BulletComponent bullet)
+    {
+        transform = transform.Translate(math.mul(transform.Rotation, Vector3.forward) * bullet.Speed * deltaTime);
     }
 }

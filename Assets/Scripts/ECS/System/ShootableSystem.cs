@@ -23,47 +23,23 @@ public partial struct ShootableSystem : ISystem, MainInputAction.IPlayerActions
 
     public void OnUpdate(ref SystemState state)
     {
-        foreach (var (transform, shootable) in SystemAPI.Query<RefRO<LocalTransform>, RefRW<ShootableComponent>>())
+        new ProcessShootbleReloadJob()
         {
-            //Reloading
-            if (shootable.ValueRO.BulletCount < shootable.ValueRO.BulletCountMax)
+            deltaTime = SystemAPI.Time.DeltaTime,
+        }.ScheduleParallel();
+
+        if (m_OnKeyFire == true)
+        {
+            m_OnKeyFire = false;
+
+            var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
+            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
+
+            new ProcessShootbleFireJob()
             {
-                if (shootable.ValueRO.BulletReloadTime < shootable.ValueRO.BulletReloadTimeMax)
-                {
-                    shootable.ValueRW.BulletReloadTime += SystemAPI.Time.DeltaTime;
-                }
-                else
-                {
-                    shootable.ValueRW.BulletReloadTime -= shootable.ValueRO.BulletReloadTimeMax;
-                    shootable.ValueRW.BulletCount++;
-                    Debug.Log("On Reload " + shootable.ValueRO.BulletCount);
-
-                    if (shootable.ValueRO.BulletCount >= shootable.ValueRO.BulletCountMax)
-                    {
-                        shootable.ValueRW.BulletReloadTime = 0f;
-                    }
-                }
-            }
-
-            //Fire
-            if (m_OnKeyFire == true)
-            {
-                if (shootable.ValueRW.BulletCount > 0 &&
-                    SystemAPI.Time.ElapsedTime >= shootable.ValueRO.BulletLastShotTime + shootable.ValueRO.BulletShotCooltime)
-                {
-                    shootable.ValueRW.BulletCount--;
-                    shootable.ValueRW.BulletLastShotTime = (float)SystemAPI.Time.ElapsedTime;
-
-                    if (shootable.ValueRO.BulletPrefab != Entity.Null)
-                    {
-                        var bulletEntity = state.EntityManager.Instantiate(shootable.ValueRO.BulletPrefab);
-                        var bulletTransform = new LocalTransform() { Position = transform.ValueRO.Position , Scale = 1f, Rotation = transform.ValueRO.Rotation };
-                        bulletTransform.Position += math.mul(transform.ValueRO.Rotation, shootable.ValueRO.ShootOffset);
-                        state.EntityManager.SetComponentData(bulletEntity, bulletTransform);
-                    }
-                }
-                m_OnKeyFire = false;
-            }
+                ecb = ecb.AsParallelWriter(),
+                elapsedTime = SystemAPI.Time.ElapsedTime,
+            }.ScheduleParallel();
         }
     }
 
@@ -79,5 +55,55 @@ public partial struct ShootableSystem : ISystem, MainInputAction.IPlayerActions
 
     public void OnMove(InputAction.CallbackContext context)
     {
+    }
+}
+
+public partial struct ProcessShootbleReloadJob : IJobEntity
+{
+    public float deltaTime;
+
+    private void Execute(ref ShootableComponent shootable)
+    {
+        if (shootable.BulletCount >= shootable.BulletCountMax)
+            return;
+            
+        if (shootable.BulletReloadTime < shootable.BulletReloadTimeMax)
+        {
+            shootable.BulletReloadTime += deltaTime;
+        }
+        else
+        {
+            shootable.BulletReloadTime -= shootable.BulletReloadTimeMax;
+            shootable.BulletCount++;
+            Debug.Log("On Reload " + shootable.BulletCount);
+
+            if (shootable.BulletCount >= shootable.BulletCountMax)
+            {
+                shootable.BulletReloadTime = 0f;
+            }
+        }
+    }
+}
+
+public partial struct ProcessShootbleFireJob : IJobEntity
+{
+    public EntityCommandBuffer.ParallelWriter ecb;
+    public double elapsedTime;
+
+    private void Execute([ChunkIndexInQuery] int chunkIndex, ref LocalTransform transform, ref ShootableComponent shootable)
+    {
+        if (shootable.BulletCount <= 0 || elapsedTime < shootable.BulletLastShotTime + shootable.BulletShotCooltime)
+            return;
+
+        shootable.BulletCount--;
+        shootable.BulletLastShotTime = (float)elapsedTime;
+
+        if (shootable.BulletPrefab == Entity.Null)
+            return;
+
+        var bulletEntity = ecb.Instantiate(chunkIndex, shootable.BulletPrefab);
+        var bulletTransform = new LocalTransform() { Position = transform.Position, Scale = 1f, Rotation = transform.Rotation };
+        bulletTransform.Position += math.mul(transform.Rotation, shootable.ShootOffset);
+        ecb.SetComponent(chunkIndex, bulletEntity, bulletTransform);
     }
 }

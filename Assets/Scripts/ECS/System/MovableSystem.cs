@@ -23,17 +23,13 @@ public partial struct MovableSystem : ISystem, MainInputAction.IPlayerActions
 
     public void OnUpdate(ref SystemState state)
     {
-        foreach (var (transform, movable) in SystemAPI.Query<RefRW<LocalTransform>, RefRO<MovableComponent>>())
-        {
-            Vector3 dir = new Vector3(moveDir.x, 0f, moveDir.y);
-            if (dir == Vector3.zero) continue;
+        if (moveDir == Vector2.zero) return;
 
-            dir = dir.normalized;
-            var transformValue = transform.ValueRW;
-            transformValue.Rotation = Quaternion.Euler(0f, 90f - Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg, 0f);
-            transformValue = transformValue.Translate(dir * movable.ValueRO.moveSpeed * SystemAPI.Time.DeltaTime);
-            transform.ValueRW = transformValue;
-        }
+        new ProcessMovableJob
+        {
+            dir = new Vector3(moveDir.x, 0f, moveDir.y),
+            deltaTime = SystemAPI.Time.DeltaTime,
+        }.ScheduleParallel();
     }
 
 
@@ -48,5 +44,17 @@ public partial struct MovableSystem : ISystem, MainInputAction.IPlayerActions
     public void OnMove(InputAction.CallbackContext context)
     {
         moveDir = context.ReadValue<Vector2>();
+    }
+}
+
+public partial struct ProcessMovableJob : IJobEntity
+{
+    public Vector3 dir;
+    public float deltaTime;
+
+    private void Execute(ref LocalTransform transform, ref MovableComponent movable)
+    {
+        transform.Rotation = Quaternion.Euler(0f, 90f - Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg, 0f);
+        transform = transform.Translate(dir * movable.moveSpeed * deltaTime);
     }
 }
