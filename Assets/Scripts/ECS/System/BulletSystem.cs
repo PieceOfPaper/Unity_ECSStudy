@@ -4,7 +4,6 @@ using UnityEngine;
 using Unity.Entities;
 using Unity.Transforms;
 using Unity.Mathematics;
-using Unity.Physics;
 using Unity.Collections;
 
 public partial struct BulletSystem : ISystem
