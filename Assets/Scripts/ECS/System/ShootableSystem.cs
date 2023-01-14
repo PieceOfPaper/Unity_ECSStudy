@@ -90,7 +90,7 @@ public partial struct ProcessShootbleFireJob : IJobEntity
     public EntityCommandBuffer.ParallelWriter ecb;
     public double elapsedTime;
 
-    private void Execute([ChunkIndexInQuery] int chunkIndex, ref LocalTransform transform, ref ShootableComponent shootable)
+    private void Execute([ChunkIndexInQuery] int chunkIndex, in LocalTransform transform, ref ShootableComponent shootable)
     {
         if (shootable.BulletCount <= 0 || elapsedTime < shootable.BulletLastShotTime + shootable.BulletShotCooltime)
             return;

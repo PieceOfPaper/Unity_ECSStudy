@@ -52,7 +52,7 @@ public partial struct ProcessMovableJob : IJobEntity
     public Vector3 dir;
     public float deltaTime;
 
-    private void Execute(ref LocalTransform transform, ref MovableComponent movable)
+    private void Execute(ref LocalTransform transform, in MovableComponent movable)
     {
         transform.Rotation = Quaternion.Euler(0f, 90f - Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg, 0f);
         transform = transform.Translate(dir * movable.moveSpeed * deltaTime);

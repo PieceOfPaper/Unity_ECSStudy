@@ -33,7 +33,7 @@ public partial struct ProcessBulletMoveJob : IJobEntity
 {
     public float deltaTime;
 
-    private void Execute(ref LocalTransform transform, ref BulletComponent bullet)
+    private void Execute(ref LocalTransform transform, in BulletComponent bullet)
     {
         transform = transform.Translate(math.mul(transform.Rotation, Vector3.forward) * bullet.Speed * deltaTime);
     }
