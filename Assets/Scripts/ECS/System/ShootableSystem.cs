@@ -105,5 +105,15 @@ public partial struct ProcessShootbleFireJob : IJobEntity
         var bulletTransform = new LocalTransform() { Position = transform.Position, Scale = 1f, Rotation = transform.Rotation };
         bulletTransform.Position += math.mul(transform.Rotation, shootable.ShootOffset);
         ecb.SetComponent(chunkIndex, bulletEntity, bulletTransform);
+        // ecb.SetComponent(chunkIndex, bulletEntity, new BulletComponent()
+        // {
+        //     Owner = entity,
+        //     Speed = 1.0f,
+        //     Damage = 100,
+        // });
+
+        // var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        // var bullet = entityManager.GetComponentData<BulletComponent>(bulletEntity);
+        // entityManager.GetCreatedAndDestroyedEntitiesAsync shootable
     }
 }

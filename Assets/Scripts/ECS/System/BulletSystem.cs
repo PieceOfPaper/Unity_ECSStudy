@@ -4,6 +4,8 @@ using UnityEngine;
 using Unity.Entities;
 using Unity.Transforms;
 using Unity.Mathematics;
+using Unity.Physics;
+using Unity.Collections;
 
 public partial struct BulletSystem : ISystem
 {
@@ -21,6 +23,10 @@ public partial struct BulletSystem : ISystem
         {
             deltaTime = SystemAPI.Time.DeltaTime,
         }.ScheduleParallel();
+
+        // new ProcessBulletTriggerEventJob
+        // {
+        // }.Schedule(SystemAPI.GetSingleton<SimulationSingleton>(), state.Dependency);
     }
 }
 
@@ -33,3 +39,23 @@ public partial struct ProcessBulletMoveJob : IJobEntity
         transform = transform.Translate(math.mul(transform.Rotation, Vector3.forward) * bullet.Speed * deltaTime);
     }
 }
+
+// public partial struct ProcessBulletTriggerEventJob : ITriggerEventsJob
+// {
+//     public void Execute(TriggerEvent collisionEvent)
+//     {
+//         var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+//         var layerA = entityManager.GetComponentData<HitLayerComponent>(collisionEvent.EntityA);
+//         var layerB = entityManager.GetComponentData<HitLayerComponent>(collisionEvent.EntityB);
+//         if (layerB.attackLayerMask.HasFlag(layerA.hitLayer) == true &&
+//             entityManager.HasComponent<BulletComponent>(collisionEvent.EntityB) == true &&
+//             entityManager.HasComponent<CharacterComponent>(collisionEvent.EntityA) == true)
+//         {
+//             var bullet = entityManager.GetComponentData<BulletComponent>(collisionEvent.EntityB);
+//             var character = entityManager.GetComponentData<CharacterComponent>(collisionEvent.EntityA);
+//             character.HP = math.max(character.HP - bullet.Damage, 0);
+//             entityManager.SetComponentData(collisionEvent.EntityA, character);
+//             entityManager.DestroyEntity(collisionEvent.EntityB);
+//         }
+//     }
+// }
