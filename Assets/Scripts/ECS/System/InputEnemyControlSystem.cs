@@ -35,7 +35,6 @@ public partial struct InputEnemyControlSystem : ISystem
 public partial struct InputEnemyControlMovableJob : IJobEntity
 {
     public double elapsedTime;
-    [Unity.Collections.LowLevel.Unsafe.NativeSetThreadIndex] private int threadIndex;
 
     private void Execute([ChunkIndexInQuery] int chunkIndex, ref MovableComponent movable, ref InputEnemyControlComponent inputEnemyCtrl)
     {
