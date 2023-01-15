@@ -29,7 +29,7 @@ public class CinemachineVirtualCameraTarget : MonoBehaviour
     private void LateUpdate()
     {
         var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-        EntityQuery query = entityManager.CreateEntityQuery(typeof(MovableComponent));
+        EntityQuery query = entityManager.CreateEntityQuery(typeof(CameraTargetComponent));
         if (query.IsEmpty == false)
         {
             var entity = query.GetSingletonEntity();

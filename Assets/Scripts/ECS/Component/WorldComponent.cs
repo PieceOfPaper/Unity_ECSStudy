@@ -6,8 +6,11 @@ using Unity.Entities;
 public struct WorldComponent : IComponentData
 {
     public Entity playerPrefab;
-    public Entity enemyPrefab;
-
     public bool isSpawnedPlayer;
-    public bool isSpawnedEnemy;
+
+    public Entity enemyPrefab;
+    public int enemySpawnCount;
+    public Vector3 enemySpawnRange;
+
+    public int spawnedEnemyCount;
 }

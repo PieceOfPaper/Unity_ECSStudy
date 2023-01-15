@@ -13,5 +13,7 @@ public struct ShootableComponent : IComponentData
     public float BulletReloadTimeMax;
     public float BulletShotCooltime;
     public float BulletLastShotTime;
+
+    public bool OnKeyFire;
 }
 

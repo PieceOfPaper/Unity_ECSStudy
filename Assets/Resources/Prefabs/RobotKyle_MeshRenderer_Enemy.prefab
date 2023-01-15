@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 9013275038109455981}
   - component: {fileID: 5958140627258825813}
   - component: {fileID: 6235609939852682027}
+  - component: {fileID: 2529009241070941411}
+  - component: {fileID: 7802477375756113035}
   m_Layer: 0
   m_Name: RobotKyle_MeshRenderer_Enemy
   m_TagString: Untagged
@@ -112,3 +114,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackLayerMask: 0
   hitLayer: 2
+--- !u!114 &2529009241070941411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6093832926167584353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55f2d82f70c1445acb5e22b9a6b75337, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &7802477375756113035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6093832926167584353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c81a34807a3bd40a5a686daa87155d31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 1
