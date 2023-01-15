@@ -5,6 +5,7 @@ using Unity.Entities;
 using Unity.Transforms;
 using Unity.Mathematics;
 using UnityEngine.InputSystem;
+using Unity.Burst;
 
 public partial struct ShootableSystem : ISystem, MainInputAction.IPlayerActions
 {
@@ -58,6 +59,7 @@ public partial struct ShootableSystem : ISystem, MainInputAction.IPlayerActions
     }
 }
 
+[BurstCompile]
 public partial struct ProcessShootbleReloadJob : IJobEntity
 {
     public float deltaTime;
@@ -85,6 +87,7 @@ public partial struct ProcessShootbleReloadJob : IJobEntity
     }
 }
 
+[BurstCompile]
 public partial struct ProcessShootbleFireJob : IJobEntity
 {
     public EntityCommandBuffer.ParallelWriter ecb;

@@ -5,6 +5,7 @@ using Unity.Entities;
 using Unity.Transforms;
 using Unity.Mathematics;
 using Unity.Collections;
+using Unity.Burst;
 
 public partial struct BulletSystem : ISystem
 {
@@ -29,6 +30,7 @@ public partial struct BulletSystem : ISystem
     }
 }
 
+[BurstCompile]
 public partial struct ProcessBulletMoveJob : IJobEntity
 {
     public float deltaTime;

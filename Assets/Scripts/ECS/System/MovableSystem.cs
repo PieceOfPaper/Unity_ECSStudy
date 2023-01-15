@@ -5,6 +5,7 @@ using Unity.Entities;
 using Unity.Transforms;
 using Unity.Mathematics;
 using UnityEngine.InputSystem;
+using Unity.Burst;
 
 public partial struct MovableSystem : ISystem, MainInputAction.IPlayerActions
 {
@@ -47,6 +48,7 @@ public partial struct MovableSystem : ISystem, MainInputAction.IPlayerActions
     }
 }
 
+[BurstCompile]
 public partial struct ProcessMovableJob : IJobEntity
 {
     public Vector3 dir;
