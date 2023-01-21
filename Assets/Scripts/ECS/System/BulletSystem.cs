@@ -23,18 +23,31 @@ public partial struct BulletSystem : ISystem
     {
         var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
 
+        var characterQuery = state.EntityManager.CreateEntityQuery(typeof(CharacterComponent), typeof(LocalTransform), typeof(HitLayerComponent));
+        var characterEntities = characterQuery.ToEntityArray(Allocator.Temp);
+        var characters = characterQuery.ToComponentDataArray<CharacterComponent>(Allocator.Temp);
+        var characterTransforms = characterQuery.ToComponentDataArray<LocalTransform>(Allocator.Temp);
+        var characterHitLayers = characterQuery.ToComponentDataArray<HitLayerComponent>(Allocator.Temp);
         foreach ((var bullet, var bulletTransform, var bulletHitLayer) in SystemAPI.Query<RefRW<BulletComponent>, RefRO<LocalTransform>, RefRO<HitLayerComponent>>())
         {
-            foreach ((var character, var characterTransform, var characterHitLayer) in SystemAPI.Query<RefRW<CharacterComponent>, RefRO<LocalTransform>, RefRO<HitLayerComponent>>())
+            for (int i = 0; i < characterEntities.Length; i ++)
             {
-                if (math.distancesq(new Vector2(characterTransform.ValueRO.Position.x, characterTransform.ValueRO.Position.z), new Vector2(bulletTransform.ValueRO.Position.x, bulletTransform.ValueRO.Position.z)) <= (characterHitLayer.ValueRO.hitboxRadius + bulletHitLayer.ValueRO.hitboxRadius) * (characterHitLayer.ValueRO.hitboxRadius + bulletHitLayer.ValueRO.hitboxRadius) &&
-                    bulletHitLayer.ValueRO.attackLayerMask.HasFlag(characterHitLayer.ValueRO.hitLayer) == true)
+                if (math.distancesq(new Vector2(characterTransforms[i].Position.x, characterTransforms[i].Position.z), new Vector2(bulletTransform.ValueRO.Position.x, bulletTransform.ValueRO.Position.z)) <= (characterHitLayers[i].hitboxRadius + bulletHitLayer.ValueRO.hitboxRadius) * (characterHitLayers[i].hitboxRadius + bulletHitLayer.ValueRO.hitboxRadius) &&
+                    bulletHitLayer.ValueRO.attackLayerMask.HasFlag(characterHitLayers[i].hitLayer) == true)
                 {
-                    character.ValueRW.HP = math.max(character.ValueRO.HP - bullet.ValueRO.Damage, 0);
+                    var character = characters[i];
+                    character.HP = math.max(character.HP - bullet.ValueRO.Damage, 0);
+                    state.EntityManager.SetComponentData(characterEntities[i], character);
+
                     bullet.ValueRW.isDestroyed = true;
                 }
             }
         }
+        characterEntities.Dispose();
+        characters.Dispose();
+        characterTransforms.Dispose();
+        characterHitLayers.Dispose();
+        characterQuery.Dispose();
 
         new ProcessBulletTimeUpdateJob()
         {
