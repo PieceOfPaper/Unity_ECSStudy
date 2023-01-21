@@ -146,6 +146,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackLayerMask: 0
   hitLayer: 1
+  hitboxRadius: 0.25
 --- !u!114 &3139908836595520810
 MonoBehaviour:
   m_ObjectHideFlags: 0

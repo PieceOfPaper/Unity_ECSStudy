@@ -30,6 +30,7 @@ public class HitLayerAuthoringInspector : Editor
         }
 
         EditorGUILayout.PropertyField(serializedObject.FindProperty("hitLayer"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("hitboxRadius"));
 
         serializedObject.ApplyModifiedProperties();
     }

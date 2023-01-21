@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 6235609939852682027}
   - component: {fileID: 2529009241070941411}
   - component: {fileID: 7802477375756113035}
+  - component: {fileID: 6572274265074230204}
   m_Layer: 0
   m_Name: RobotKyle_MeshRenderer_Enemy
   m_TagString: Untagged
@@ -114,6 +115,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackLayerMask: 0
   hitLayer: 2
+  hitboxRadius: 0.25
 --- !u!114 &2529009241070941411
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -139,3 +141,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 1
+--- !u!114 &6572274265074230204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6093832926167584353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1387b39285f7f4c969b1fcba51609b12, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BulletPrefab: {fileID: 6866316829622643985, guid: 8aa8099ad8fd64c77b891d8e13e31a39, type: 3}
+  ShootOffset: {x: 0, y: 1.3, z: 0.28}
+  BulletCount: 6
+  BulletReloadTime: 1
+  BulletShotCooltime: 0.2

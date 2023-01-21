@@ -5,6 +5,10 @@ using Unity.Entities;
 
 public partial struct BulletComponent : IComponentData
 {
-    public float Speed;
     public int Damage;
+    public float Duration;
+
+
+    public float time;
+    public bool isDestroyed;
 }

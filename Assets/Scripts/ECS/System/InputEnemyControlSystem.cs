@@ -27,6 +27,7 @@ public partial struct InputEnemyControlSystem : ISystem
 
         new InputEnemyControlShootableJob()
         {
+            elapsedTime = SystemAPI.Time.ElapsedTime,
         }.ScheduleParallel();
     }
 }
@@ -36,7 +37,7 @@ public partial struct InputEnemyControlMovableJob : IJobEntity
 {
     public double elapsedTime;
 
-    private void Execute([ChunkIndexInQuery] int chunkIndex, ref MovableComponent movable, ref InputEnemyControlComponent inputEnemyCtrl)
+    private void Execute(ref MovableComponent movable, ref InputEnemyControlComponent inputEnemyCtrl)
     {
         if (inputEnemyCtrl.nextMovableUpdateTime > elapsedTime)
             return;
@@ -51,11 +52,28 @@ public partial struct InputEnemyControlMovableJob : IJobEntity
 [BurstCompile]
 public partial struct InputEnemyControlShootableJob : IJobEntity
 {
-    public int randSeed;
     public double elapsedTime;
 
-    private void Execute([ChunkIndexInQuery] int chunkIndex, ref ShootableComponent shootable, ref InputEnemyControlComponent inputEnemyCtrl)
+    private void Execute(ref ShootableComponent shootable, ref InputEnemyControlComponent inputEnemyCtrl)
     {
-        //TODO
+        if (inputEnemyCtrl.nextShootableUpdateTime == 0f)
+        {
+            var random = inputEnemyCtrl.random;
+            inputEnemyCtrl.nextShootableUpdateTime = elapsedTime + shootable.BulletShotCooltime + random.NextFloat(-1.0f, 1.5f);
+            inputEnemyCtrl.random = random;
+        }
+        else
+        {
+            if (inputEnemyCtrl.nextShootableUpdateTime > elapsedTime)
+                return;
+
+            if (shootable.OnKeyFire == true)
+                return;
+
+            var random = inputEnemyCtrl.random;
+            shootable.OnKeyFire = true;
+            inputEnemyCtrl.nextShootableUpdateTime = elapsedTime + shootable.BulletShotCooltime + random.NextFloat(-1.0f, 1.5f);
+            inputEnemyCtrl.random = random;
+        }
     }
 }

@@ -13,4 +13,5 @@ public partial struct HitLayerComponent : IComponentData
 {
     public HitLayerType attackLayerMask;
     public HitLayerType hitLayer;
+    public float hitboxRadius;
 }

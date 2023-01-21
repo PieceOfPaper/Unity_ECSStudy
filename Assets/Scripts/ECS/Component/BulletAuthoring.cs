@@ -5,8 +5,8 @@ using Unity.Entities;
 
 public class BulletAuthoring : MonoBehaviour
 {
-    [Tooltip("속도")] public float Speed = 1.0f;
     [Tooltip("데미지")] public int Damage = 1;
+    [Tooltip("시간")] public float Duration = 1.0f;
 }
 
 public partial class BulletBaker : Baker<BulletAuthoring>
@@ -15,8 +15,8 @@ public partial class BulletBaker : Baker<BulletAuthoring>
     {
         AddComponent(new BulletComponent()
         {
-            Speed = authoring.Speed,
             Damage = authoring.Damage,
+            Duration = authoring.Duration,
         });
     }
 }

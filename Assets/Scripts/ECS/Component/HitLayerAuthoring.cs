@@ -7,6 +7,18 @@ public class HitLayerAuthoring : MonoBehaviour
 {
     public int attackLayerMask = 0;
     public HitLayerType hitLayer = 0;
+    public float hitboxRadius = 1.0f;
+
+#if UNITY_EDITOR
+    
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.matrix = transform.localToWorldMatrix;
+        Gizmos.DrawWireSphere(transform.localPosition, hitboxRadius);
+    }
+
+#endif
 }
 
 public class HitLayerBaker : Baker<HitLayerAuthoring>
@@ -17,6 +29,7 @@ public class HitLayerBaker : Baker<HitLayerAuthoring>
         {
             attackLayerMask = (HitLayerType)authoring.attackLayerMask,
             hitLayer = authoring.hitLayer,
+            hitboxRadius = authoring.hitboxRadius,
         });
     }
 }

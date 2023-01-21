@@ -7,6 +7,7 @@ using Unity.Mathematics;
 using Unity.Collections;
 using Unity.Burst;
 
+[UpdateAfter(typeof(MovableSystem))]
 public partial struct BulletSystem : ISystem
 {
     public void OnCreate(ref SystemState state)
@@ -17,46 +18,80 @@ public partial struct BulletSystem : ISystem
     {
     }
 
+    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        new ProcessBulletMoveJob()
+        var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
+
+        foreach ((var bullet, var bulletTransform, var bulletHitLayer) in SystemAPI.Query<RefRW<BulletComponent>, RefRO<LocalTransform>, RefRO<HitLayerComponent>>())
+        {
+            foreach ((var character, var characterTransform, var characterHitLayer) in SystemAPI.Query<RefRW<CharacterComponent>, RefRO<LocalTransform>, RefRO<HitLayerComponent>>())
+            {
+                if (math.distancesq(new Vector2(characterTransform.ValueRO.Position.x, characterTransform.ValueRO.Position.z), new Vector2(bulletTransform.ValueRO.Position.x, bulletTransform.ValueRO.Position.z)) <= (characterHitLayer.ValueRO.hitboxRadius + bulletHitLayer.ValueRO.hitboxRadius) * (characterHitLayer.ValueRO.hitboxRadius + bulletHitLayer.ValueRO.hitboxRadius) &&
+                    bulletHitLayer.ValueRO.attackLayerMask.HasFlag(characterHitLayer.ValueRO.hitLayer) == true)
+                {
+                    character.ValueRW.HP = math.max(character.ValueRO.HP - bullet.ValueRO.Damage, 0);
+                    bullet.ValueRW.isDestroyed = true;
+                }
+            }
+        }
+
+        new ProcessBulletTimeUpdateJob()
         {
             deltaTime = SystemAPI.Time.DeltaTime,
         }.ScheduleParallel();
 
-        // new ProcessBulletTriggerEventJob
-        // {
-        // }.Schedule(SystemAPI.GetSingleton<SimulationSingleton>(), state.Dependency);
+        new ProcessDestroyBulletJob()
+        {
+            ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter(),
+        }.ScheduleParallel();
+
+        new ProcessDestroyCharacterJob()
+        {
+            ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter(),
+        }.ScheduleParallel();
+
     }
 }
 
 [BurstCompile]
-public partial struct ProcessBulletMoveJob : IJobEntity
+public partial struct ProcessBulletTimeUpdateJob : IJobEntity
 {
     public float deltaTime;
-
-    private void Execute(ref LocalTransform transform, in BulletComponent bullet)
+    private void Execute(ref BulletComponent bullet)
     {
-        transform = transform.Translate(math.mul(transform.Rotation, Vector3.forward) * bullet.Speed * deltaTime);
+        if (bullet.isDestroyed == true)
+            return;
+
+        bullet.time += deltaTime;
+        if (bullet.time >= bullet.Duration) bullet.isDestroyed = true;
     }
 }
 
-// public partial struct ProcessBulletTriggerEventJob : ITriggerEventsJob
-// {
-//     public void Execute(TriggerEvent collisionEvent)
-//     {
-//         var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
-//         var layerA = entityManager.GetComponentData<HitLayerComponent>(collisionEvent.EntityA);
-//         var layerB = entityManager.GetComponentData<HitLayerComponent>(collisionEvent.EntityB);
-//         if (layerB.attackLayerMask.HasFlag(layerA.hitLayer) == true &&
-//             entityManager.HasComponent<BulletComponent>(collisionEvent.EntityB) == true &&
-//             entityManager.HasComponent<CharacterComponent>(collisionEvent.EntityA) == true)
-//         {
-//             var bullet = entityManager.GetComponentData<BulletComponent>(collisionEvent.EntityB);
-//             var character = entityManager.GetComponentData<CharacterComponent>(collisionEvent.EntityA);
-//             character.HP = math.max(character.HP - bullet.Damage, 0);
-//             entityManager.SetComponentData(collisionEvent.EntityA, character);
-//             entityManager.DestroyEntity(collisionEvent.EntityB);
-//         }
-//     }
-// }
+[BurstCompile]
+public partial struct ProcessDestroyBulletJob : IJobEntity
+{
+    public EntityCommandBuffer.ParallelWriter ecb;
+
+    private void Execute([ChunkIndexInQuery] int chunkIndex, Entity entity, in BulletComponent bullet)
+    {
+        if (bullet.isDestroyed == true)
+        {
+            ecb.DestroyEntity(chunkIndex, entity);
+        }
+    }
+}
+
+[BurstCompile]
+public partial struct ProcessDestroyCharacterJob : IJobEntity
+{
+    public EntityCommandBuffer.ParallelWriter ecb;
+
+    private void Execute([ChunkIndexInQuery] int chunkIndex, Entity entity, in CharacterComponent character)
+    {
+        if (character.HP == 0)
+        {
+            ecb.DestroyEntity(chunkIndex, entity);
+        }
+    }
+}

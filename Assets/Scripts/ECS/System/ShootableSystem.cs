@@ -88,5 +88,6 @@ public partial struct ProcessShootbleFireJob : IJobEntity
         var bulletTransform = new LocalTransform() { Position = transform.Position, Scale = 1f, Rotation = transform.Rotation };
         bulletTransform.Position += math.mul(transform.Rotation, shootable.ShootOffset);
         ecb.SetComponent(chunkIndex, bulletEntity, bulletTransform);
+        ecb.SetComponent(chunkIndex, bulletEntity, new MovableComponent() { moveSpeed = 2.0f, moveDir = math.mul(transform.Rotation, Vector3.forward) });
     }
 }
