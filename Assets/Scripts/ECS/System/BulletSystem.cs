@@ -24,8 +24,7 @@ public partial struct BulletSystem : ISystem
         var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
 
         var characterQuery = state.EntityManager.CreateEntityQuery(typeof(CharacterComponent), typeof(LocalTransform), typeof(HitLayerComponent));
-        var bulletQuery = state.EntityManager.CreateEntityQuery(typeof(BulletComponent), typeof(LocalTransform), typeof(HitLayerComponent));
-        if (characterQuery.IsEmpty == false && bulletQuery.IsEmpty == false)
+        if (characterQuery.IsEmpty == false)
         {
             var characterEntities = characterQuery.ToEntityArray(Allocator.Temp);
             var characters = characterQuery.ToComponentDataArray<CharacterComponent>(Allocator.Temp);
@@ -51,7 +50,6 @@ public partial struct BulletSystem : ISystem
             characterTransforms.Dispose();
             characterHitLayers.Dispose();
         }
-        bulletQuery.Dispose();
         characterQuery.Dispose();
 
         new ProcessBulletTimeUpdateJob()
