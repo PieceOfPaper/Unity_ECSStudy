@@ -34,8 +34,10 @@ public partial struct BulletSystem : ISystem
             {
                 for (int characterIndex = 0; characterIndex < characterEntities.Length; characterIndex++)
                 {
-                    var checkDistance = math.distancesq(new Vector2(characterTransforms[characterIndex].Position.x, characterTransforms[characterIndex].Position.z), new Vector2(bulletTransform.ValueRO.Position.x, bulletTransform.ValueRO.Position.z)) <= (characterHitLayers[characterIndex].hitboxRadius + bulletHitLayer.ValueRO.hitboxRadius) * (characterHitLayers[characterIndex].hitboxRadius + bulletHitLayer.ValueRO.hitboxRadius);
-                    var checkLayer = (bulletHitLayer.ValueRO.attackLayerMask & characterHitLayers[characterIndex].hitLayer) == characterHitLayers[characterIndex].hitLayer;
+                    var characterTransform = characterTransforms[characterIndex];
+                    var characterHitLayer = characterHitLayers[characterIndex];
+                    var checkDistance = math.distancesq(new float2(characterTransform.Position.x, characterTransform.Position.z), new float2(bulletTransform.ValueRO.Position.x, bulletTransform.ValueRO.Position.z)) <= (characterHitLayer.hitboxRadius + bulletHitLayer.ValueRO.hitboxRadius) * (characterHitLayer.hitboxRadius + bulletHitLayer.ValueRO.hitboxRadius);
+                    var checkLayer = (bulletHitLayer.ValueRO.attackLayerMask & characterHitLayer.hitLayer) > 0;
                     if (checkDistance && checkLayer)
                     {
                         var character = characters[characterIndex];
