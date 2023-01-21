@@ -24,29 +24,34 @@ public partial struct BulletSystem : ISystem
         var ecbSingleton = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
 
         var characterQuery = state.EntityManager.CreateEntityQuery(typeof(CharacterComponent), typeof(LocalTransform), typeof(HitLayerComponent));
-        var characterEntities = characterQuery.ToEntityArray(Allocator.Temp);
-        var characters = characterQuery.ToComponentDataArray<CharacterComponent>(Allocator.Temp);
-        var characterTransforms = characterQuery.ToComponentDataArray<LocalTransform>(Allocator.Temp);
-        var characterHitLayers = characterQuery.ToComponentDataArray<HitLayerComponent>(Allocator.Temp);
-        foreach ((var bullet, var bulletTransform, var bulletHitLayer) in SystemAPI.Query<RefRW<BulletComponent>, RefRO<LocalTransform>, RefRO<HitLayerComponent>>())
+        var bulletQuery = state.EntityManager.CreateEntityQuery(typeof(BulletComponent), typeof(LocalTransform), typeof(HitLayerComponent));
+        if (characterQuery.IsEmpty == false && bulletQuery.IsEmpty == false)
         {
-            for (int i = 0; i < characterEntities.Length; i ++)
+            var characterEntities = characterQuery.ToEntityArray(Allocator.Temp);
+            var characters = characterQuery.ToComponentDataArray<CharacterComponent>(Allocator.Temp);
+            var characterTransforms = characterQuery.ToComponentDataArray<LocalTransform>(Allocator.Temp);
+            var characterHitLayers = characterQuery.ToComponentDataArray<HitLayerComponent>(Allocator.Temp);
+            foreach ((var bullet, var bulletTransform, var bulletHitLayer) in SystemAPI.Query<RefRW<BulletComponent>, RefRO<LocalTransform>, RefRO<HitLayerComponent>>())
             {
-                if (math.distancesq(new Vector2(characterTransforms[i].Position.x, characterTransforms[i].Position.z), new Vector2(bulletTransform.ValueRO.Position.x, bulletTransform.ValueRO.Position.z)) <= (characterHitLayers[i].hitboxRadius + bulletHitLayer.ValueRO.hitboxRadius) * (characterHitLayers[i].hitboxRadius + bulletHitLayer.ValueRO.hitboxRadius) &&
-                    bulletHitLayer.ValueRO.attackLayerMask.HasFlag(characterHitLayers[i].hitLayer) == true)
+                for (int characterIndex = 0; characterIndex < characterEntities.Length; characterIndex++)
                 {
-                    var character = characters[i];
-                    character.HP = math.max(character.HP - bullet.ValueRO.Damage, 0);
-                    state.EntityManager.SetComponentData(characterEntities[i], character);
-
-                    bullet.ValueRW.isDestroyed = true;
+                    var checkDistance = math.distancesq(new Vector2(characterTransforms[characterIndex].Position.x, characterTransforms[characterIndex].Position.z), new Vector2(bulletTransform.ValueRO.Position.x, bulletTransform.ValueRO.Position.z)) <= (characterHitLayers[characterIndex].hitboxRadius + bulletHitLayer.ValueRO.hitboxRadius) * (characterHitLayers[characterIndex].hitboxRadius + bulletHitLayer.ValueRO.hitboxRadius);
+                    var checkLayer = (bulletHitLayer.ValueRO.attackLayerMask & characterHitLayers[characterIndex].hitLayer) == characterHitLayers[characterIndex].hitLayer;
+                    if (checkDistance && checkLayer)
+                    {
+                        var character = characters[characterIndex];
+                        character.HP = math.max(character.HP - bullet.ValueRO.Damage, 0);
+                        state.EntityManager.SetComponentData(characterEntities[characterIndex], character);
+                        bullet.ValueRW.isDestroyed = true;
+                    }
                 }
             }
+            characterEntities.Dispose();
+            characters.Dispose();
+            characterTransforms.Dispose();
+            characterHitLayers.Dispose();
         }
-        characterEntities.Dispose();
-        characters.Dispose();
-        characterTransforms.Dispose();
-        characterHitLayers.Dispose();
+        bulletQuery.Dispose();
         characterQuery.Dispose();
 
         new ProcessBulletTimeUpdateJob()
