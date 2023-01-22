@@ -7,6 +7,7 @@ public partial struct BulletComponent : IComponentData
 {
     public int Damage;
     public float Duration;
+    public Entity HitEffect;
 
 
     public float time;

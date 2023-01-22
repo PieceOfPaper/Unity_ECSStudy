@@ -91,10 +91,15 @@ public partial struct ProcessDestroyBulletJob : IJobEntity
 {
     public EntityCommandBuffer.ParallelWriter ecb;
 
-    private void Execute([ChunkIndexInQuery] int chunkIndex, Entity entity, in BulletComponent bullet)
+    private void Execute([ChunkIndexInQuery] int chunkIndex, Entity entity, in BulletComponent bullet, in LocalTransform transform)
     {
         if (bullet.isDestroyed == true)
         {
+            if (bullet.HitEffect != Entity.Null)
+            {
+                var hitEffectEntity = ecb.Instantiate(chunkIndex, bullet.HitEffect);
+                ecb.SetComponent(chunkIndex, hitEffectEntity, transform);
+            }
             ecb.DestroyEntity(chunkIndex, entity);
         }
     }
